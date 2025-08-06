@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>尚方能源零售套餐计算工具（用户侧）</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .input-group input[type="number"] {
+            text-align: right;
+        }
+        .input-group select {
+            appearance: none;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6"><polygon points="0,0 10,0 5,6"/></svg>') no-repeat right center;
+            background-size: 10px 6px;
+            padding-right: 20px;
+        }
+        .input-group select:focus {
+            outline: none;
+            border-color: #007BFF;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .result h3 {
+            margin: 0 0 10px;
+            color: #333;
+        }
+        .result p {
+            margin: 5px 0;
+            font-size: 16px;
+            color: #555;
+        }
+        .result span {
+            font-weight: bold;
+            color: #007BFF;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>尚方能源零售套餐计算工具（用户侧）</h1>
+        <form id="calculationForm">
+            <div class="input-group">
+                <label for="packageType">套餐类型</label>
+                <select id="packageType" name="packageType">
+                    <option value="0.9">A套餐（固定价格占比90%）</option>
+                    <option value="0.8">B套餐（固定价格占比80%）</option>
+                    <option value="0.7">C套餐（固定价格占比70%）</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="userType">用户类型</label>
+                <select id="userType" name="userType" onchange="updateOriginalPrice()">
+                    <option value="grid">电网代购用户</option>
+                    <option value="direct">直接交易用户</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="originalPrice">原始电价（元/兆瓦时）</label>
+                <input type="number" id="originalPrice" name="originalPrice" step="0.01" readonly>
+            </div>
+            <div class="input-group">
+                <label for="fixedPrice">与尚方签约价格（元/兆瓦时）</label>
+                <input type="number" id="fixedPrice" name="fixedPrice" step="0.01" required>
+            </div>
+            <div class="input-group">
+                <label for="signedElectricity">签约电量（兆瓦时）</label>
+                <input type="number" id="signedElectricity" name="signedElectricity" step="0.01" required>
+            </div>
+            <div class="input-group">
+                <label for="linkageType">联动类型</label>
+                <select id="linkageType" name="linkageType">
+                    <option value="372">月度交易综合价（372元/兆瓦时）</option>
+                    <option value="372">月度集中交易综合价（372元/兆瓦时）</option>
+                    <option value="500">日前市场月度综合价（500元/兆瓦时）</option>
+                </select>
+            </div>
+            <button type="button" onclick="calculate()">计算</button>
+        </form>
+        <div class="result" id="result">
+            <h3>计算结果</h3>
+            <p>客户收益：<span id="customerProfit">0</span>元</p>
+        </div>
+    </div>
+
+    <script>
+        // 初始化原始电价
+        function updateOriginalPrice() {
+            const userType = document.getElementById('userType').value;
+            const originalPriceInput = document.getElementById('originalPrice');
+            if (userType === 'grid') {
+                originalPriceInput.value = 506; // 0.506元/千瓦时 * 1000
+            } else if (userType === 'direct') {
+                originalPriceInput.value = 430; // 0.43元/千瓦时 * 1000
+            }
+        }
+
+        // 计算逻辑
+        function calculate() {
+            const packageType = parseFloat(document.getElementById('packageType').value);
+            const fixedPrice = parseFloat(document.getElementById('fixedPrice').value);
+            const signedElectricity = parseFloat(document.getElementById('signedElectricity').value);
+            const linkageType = parseFloat(document.getElementById('linkageType').value);
+            const originalPrice = parseFloat(document.getElementById('originalPrice').value);
+
+            // 计算尚方购买成本
+            const fangCost = (fixedPrice * packageType + linkageType * (1 - packageType)) * signedElectricity;
+
+            // 计算原始购买成本
+            const originalCost = originalPrice * signedElectricity;
+
+            // 计算客户收益
+            const customerProfit = originalCost - fangCost;
+
+            // 显示结果
+            document.getElementById('customerProfit').textContent = customerProfit.toFixed(2);
+        }
+
+        // 初始化页面加载时的原始电价
+        window.onload = updateOriginalPrice;
+    </script>
+</body>
+</html>
