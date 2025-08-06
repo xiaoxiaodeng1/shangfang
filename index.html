@@ -85,6 +85,11 @@
         button:hover {
             background-color: #0056b3;
         }
+        .description {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -93,11 +98,12 @@
         <form id="calculationForm">
             <div class="input-group">
                 <label for="packageType">套餐类型</label>
-                <select id="packageType" name="packageType">
+                <select id="packageType" name="packageType" onchange="updateLinkageOptions()">
                     <option value="0.9">A套餐（固定价格占比90%）</option>
                     <option value="0.8">B套餐（固定价格占比80%）</option>
                     <option value="0.7">C套餐（固定价格占比70%）</option>
                 </select>
+                <p class="description">固定价格模式“合同约定的电量比例”占比为 70-90%之间。</p>
             </div>
             <div class="input-group">
                 <label for="userType">用户类型</label>
@@ -113,6 +119,7 @@
             <div class="input-group">
                 <label for="fixedPrice">与尚方签约价格（元/兆瓦时）</label>
                 <input type="number" id="fixedPrice" name="fixedPrice" step="0.01" required>
+                <p class="description">平段价格上限为 554 元/兆瓦时，下限为 372 元/兆瓦时。</p>
             </div>
             <div class="input-group">
                 <label for="signedElectricity">签约电量（兆瓦时）</label>
@@ -125,6 +132,11 @@
                     <option value="372">月度集中交易综合价（372元/兆瓦时）</option>
                     <option value="500">日前市场月度综合价（500元/兆瓦时）</option>
                 </select>
+                <p class="description">
+                    <strong>月度集中竞争交易综合价：</strong>指交易中心月度交易时发布的当月月度集中竞争综合价。作为零售结算模式联动价格时包含批发市场用户侧度电分摊单价。<br>
+                    <strong>月度中长期交易综合价：</strong>根据批发市场月度双边协商交易、挂牌、月度集中竞争交易等中长期交易品种的加权平均价格。<br>
+                    <strong>日前市场月度加权平均综合价：</strong>指当月日前市场各时段统一结算点电价和对应时段市场总电量的加权平均价格。
+                </p>
             </div>
             <button type="button" onclick="calculate()">计算</button>
         </form>
@@ -143,6 +155,26 @@
                 originalPriceInput.value = 506; // 0.506元/千瓦时 * 1000
             } else if (userType === 'direct') {
                 originalPriceInput.value = 430; // 0.43元/千瓦时 * 1000
+            }
+        }
+
+        // 更新联动类型选项
+        function updateLinkageOptions() {
+            const packageType = document.getElementById('packageType').value;
+            const linkageTypeSelect = document.getElementById('linkageType');
+            if (packageType === '0.7') {
+                // 如果选择C套餐，只显示前两种联动类型
+                linkageTypeSelect.innerHTML = `
+                    <option value="372">月度交易综合价（372元/兆瓦时）</option>
+                    <option value="372">月度集中交易综合价（372元/兆瓦时）</option>
+                `;
+            } else {
+                // 其他套餐显示所有联动类型
+                linkageTypeSelect.innerHTML = `
+                    <option value="372">月度交易综合价（372元/兆瓦时）</option>
+                    <option value="372">月度集中交易综合价（372元/兆瓦时）</option>
+                    <option value="500">日前市场月度综合价（500元/兆瓦时）</option>
+                `;
             }
         }
 
@@ -167,8 +199,11 @@
             document.getElementById('customerProfit').textContent = customerProfit.toFixed(2);
         }
 
-        // 初始化页面加载时的原始电价
-        window.onload = updateOriginalPrice;
+        // 初始化页面加载时的原始电价和联动类型选项
+        window.onload = function() {
+            updateOriginalPrice();
+            updateLinkageOptions();
+        };
     </script>
 </body>
 </html>
