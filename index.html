@@ -90,6 +90,16 @@
             color: #666;
             margin-top: 5px;
         }
+        .disclaimer {
+            background-color: #fff;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -103,7 +113,7 @@
                     <option value="0.8">B套餐（固定价格占比80%）</option>
                     <option value="0.7">C套餐（固定价格占比70%）</option>
                 </select>
-                <p class="description">固定价格模式“合同约定的电量比例”占比为 70-90%之间。与下方市场联动“合同约定的电量比例”两者之和等于 100%。市场联动价格“合同约定的电量比例”占比之和为 10-30%之间。需注意：选择现货市场联动价格的“合同约定的电量比例”占比为 0-20%之间</p>
+                <p class="description">固定价格模式“合同约定的电量比例”占比为 70%-90%。与下方市场联动“合同约定的电量比例”两者之和等于 100%。需注意：现货市场联动价格的“合同约定的电量比例”占比为 0%-20%。</p>
             </div>
             <div class="input-group">
                 <label for="userType">用户类型</label>
@@ -114,17 +124,16 @@
             </div>
             <div class="input-group">
                 <label for="originalPrice">原始电价（元/兆瓦时）</label>
-                <input type="number" id="originalPrice" name="originalPrice" step="0.01" readonly>
+                <input type="number" id="originalPrice" name="originalPrice" step="1" readonly>
             </div>
             <div class="input-group">
                 <label for="fixedPrice">与尚方签约价格（元/兆瓦时）</label>
-                <input type="number" id="fixedPrice" name="fixedPrice" step="0.01" required>
-                <p class="description">这里指平段价格，上限为 554 元/兆瓦时，下限为 372 元/兆瓦时。</p>
+                <input type="number" id="fixedPrice" name="fixedPrice" step="1" required>
+                <p class="description">平段价格，上限为554元/兆瓦时</p>
             </div>
             <div class="input-group">
-                <label for="signedElectricity">签约电量（兆瓦时）</label>
-                <input type="number" id="signedElectricity" name="signedElectricity" step="0.01" required>
-                <p class="description">这是全年电量</p>
+                <label for="signedElectricity">签约全年电量（兆瓦时）</label>
+                <input type="number" id="signedElectricity" name="signedElectricity" step="10" required>
             </div>
             <div class="input-group">
                 <label for="linkageType">联动类型</label>
@@ -144,8 +153,11 @@
         <div class="result" id="result">
             <h3>计算结果</h3>
             <p>客户预计收益：<span id="customerProfit">0</span>元</p>
-            <p class="description">客户收入=之前购电价格-尚方购电平期电费-市场化分摊电费。这是全年节约的收入。</p>
+            <p class="description">客户收益=原始电费-尚方购电平期电费-市场化分摊电费。这是全年节约的收入。市场化分摊价格预测为6元/兆瓦时。</p>
         </div>
+    </div>
+    <div class="disclaimer">
+        <p>实际收益以业主实际用电习惯、实际市场分摊等因素为主，以上测算仅供分析参考，最终解释权归尚方能源所有。</p>
     </div>
 
     <script>
@@ -154,9 +166,9 @@
             const userType = document.getElementById('userType').value;
             const originalPriceInput = document.getElementById('originalPrice');
             if (userType === 'grid') {
-                originalPriceInput.value = 506; // 0.506元/千瓦时 * 1000
+                originalPriceInput.value = 479.5; // 0.4795元/千瓦时 * 1000
             } else if (userType === 'direct') {
-                originalPriceInput.value = 430; // 0.43元/千瓦时 * 1000
+                originalPriceInput.value = 420; // 0.42元/千瓦时 * 1000
             }
         }
 
